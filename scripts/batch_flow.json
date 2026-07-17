@@ -1,0 +1,182 @@
+{
+  "name": "douyin-spark-keeper-batch",
+  "description": "抖音续火花一键执行流程：生成消息 → 浏览器登录 → 逐个发送",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "step": 1,
+      "name": "生成消息",
+      "tool": "execute_shell_command",
+      "params": {
+        "command": "python3 {{SKILL_DIR}}/scripts/generate_messages.py"
+      },
+      "description": "运行消息生成脚本，输出到 data/messages_today.json"
+    },
+    {
+      "step": 2,
+      "name": "读取生成的消息",
+      "tool": "read_file",
+      "params": {
+        "file_path": "{{SKILL_DIR}}/data/messages_today.json"
+      },
+      "description": "读取今日生成的所有消息"
+    },
+    {
+      "step": 3,
+      "name": "启动浏览器",
+      "tool": "browser_use",
+      "params": {
+        "action": "start"
+      },
+      "description": "启动 headless 浏览器"
+    },
+    {
+      "step": 4,
+      "name": "检查登录状态",
+      "tool": "browser_use",
+      "params": {
+        "action": "open",
+        "url": "https://www.douyin.com/chat"
+      },
+      "description": "打开抖音私信页，检查是否需要登录",
+      "on_fail": "goto_login"
+    },
+    {
+      "step": "goto_login",
+      "name": "登录抖音",
+      "substeps": [
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "open",
+            "url": "https://www.douyin.com/"
+          }
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "snapshot"
+          },
+          "description": "获取页面快照，找到密码登录按钮"
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "click",
+            "ref": "{{password_login_btn_ref}}"
+          },
+          "description": "点击「密码登录」切换登录模式"
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "type",
+            "ref": "{{phone_input_ref}}",
+            "text": "{{douyin_phone}}"
+          },
+          "description": "输入手机号"
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "type",
+            "ref": "{{password_input_ref}}",
+            "text": "{{douyin_password}}"
+          },
+          "description": "输入密码"
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "click",
+            "ref": "{{login_btn_ref}}"
+          },
+          "description": "点击登录"
+        },
+        {
+          "tool": "browser_use",
+          "params": {
+            "action": "navigate",
+            "url": "https://www.douyin.com/chat"
+          },
+          "description": "登录后导航到私信页"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "name": "逐个发送消息",
+      "description": "遍历 messages_today.json 中的每个联系人，依次发送",
+      "loop": {
+        "over": "messages",
+        "substeps": [
+          {
+            "name": "查找联系人（含虚拟滚动）",
+            "tool": "browser_use",
+            "params": {
+              "action": "evaluate",
+              "code": "(function(){ var panel = document.querySelector('[class*=\"conversationConversationListwrapper\"]'); for (var step = 0; step < 20; step++) { panel.scrollTop = step * 200; var items = document.querySelectorAll('[class*=\"conversationConversationItemwrapper\"]'); for (var i = 0; i < items.length; i++) { if (items[i].textContent.indexOf('{{item.nickname}}') !== -1) { var rect = items[i].getBoundingClientRect(); var opts = {bubbles: true, cancelable: true, clientX: rect.left + 10, clientY: rect.top + 10, view: window}; items[i].dispatchEvent(new MouseEvent('mousedown', opts)); items[i].dispatchEvent(new MouseEvent('mouseup', opts)); items[i].dispatchEvent(new MouseEvent('click', opts)); items[i].dispatchEvent(new PointerEvent('pointerdown', opts)); items[i].dispatchEvent(new PointerEvent('pointerup', opts)); return 'clicked'; } } } return 'not_found'; })()"
+            },
+            "description": "滚动虚拟列表查找联系人并派发点击事件"
+          },
+          {
+            "name": "等待聊天加载",
+            "tool": "browser_use",
+            "params": {
+              "action": "wait_for",
+              "wait_time": 2
+            }
+          },
+          {
+            "name": "输入消息",
+            "tool": "browser_use",
+            "params": {
+              "action": "type",
+              "selector": "[contenteditable=\"true\"][class*=\"editor-kit\"]",
+              "text": "{{item.message}}"
+            },
+            "description": "用 type 动作输入单行消息（触发 Slate.js 键盘事件）"
+          },
+          {
+            "name": "点击发送",
+            "tool": "browser_use",
+            "params": {
+              "action": "evaluate",
+              "code": "(function(){ var btn = document.querySelector('svg[class*=\"publishBtn\"], svg[class*=\"send\"]'); if (!btn) { btn = document.querySelector('[class*=\"e2e-send-msg-btn\"]'); } if (btn) { var rect = btn.getBoundingClientRect(); var opts = {bubbles: true, cancelable: true, clientX: rect.left + 5, clientY: rect.top + 5, view: window}; btn.dispatchEvent(new PointerEvent('pointerdown', opts)); btn.dispatchEvent(new PointerEvent('pointerup', opts)); btn.dispatchEvent(new MouseEvent('click', opts)); if (btn.parentElement) btn.parentElement.dispatchEvent(new MouseEvent('click', opts)); return 'sent'; } return 'btn_not_found'; })()"
+            },
+            "description": "派发事件到发送按钮 SVG 及其父元素"
+          },
+          {
+            "name": "等待发送完成",
+            "tool": "browser_use",
+            "params": {
+              "action": "wait_for",
+              "wait_time": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "step": 6,
+      "name": "停止浏览器",
+      "tool": "browser_use",
+      "params": {
+        "action": "stop"
+      },
+      "description": "全部发送完成后关闭浏览器"
+    }
+  ],
+  "variables": {
+    "SKILL_DIR": "skills/douyin-spark-keeper 的绝对路径",
+    "douyin_phone": "抖音账号手机号（从 contacts.json 的 account 字段读取）",
+    "douyin_password": "抖音账号密码（需用户提供或配置在安全位置）"
+  },
+  "notes": [
+    "消息是单行格式，不要换行",
+    "联系人可能被虚拟滚动隐藏，必须逐步滚动查找",
+    "遇到验证码立即停止，记录状态，不要反复重试",
+    "跳过 enabled=false 的联系人",
+    "每次执行前必须检查登录状态"
+  ]
+}
