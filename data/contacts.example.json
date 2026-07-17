@@ -1,0 +1,42 @@
+{
+  "last_updated": "2026-01-01T00:00:00+08:00",
+  "account": "<your_phone_number>",
+  "owner_name": "<your_nickname>",
+  "send_time": "08:00",
+  "total_contacts": 3,
+  "contacts": [
+    {
+      "id": 1,
+      "nickname": "好友A",
+      "city": "北京",
+      "wttr_city": "Beijing",
+      "fire_status": "正常",
+      "fire_detail": "100天",
+      "danger_level": "safe",
+      "first_sent": true,
+      "enabled": true
+    },
+    {
+      "id": 2,
+      "nickname": "好友B",
+      "city": "上海",
+      "wttr_city": "Shanghai",
+      "fire_status": "正常",
+      "fire_detail": "50天",
+      "danger_level": "safe",
+      "first_sent": true,
+      "enabled": true
+    },
+    {
+      "id": 3,
+      "nickname": "好友C",
+      "city": "成都",
+      "wttr_city": "Chengdu",
+      "fire_status": "正常",
+      "fire_detail": "1天",
+      "danger_level": "warning",
+      "first_sent": false,
+      "enabled": true
+    }
+  ]
+}
