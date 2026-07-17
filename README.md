@@ -1,4 +1,4 @@
-# 🔥 抖音续火花 · Douyin Spark Keeper
+# 🔥 抖音续火花Skill · Douyin Spark Keeper Skill
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.8+-blue" alt="Python">
@@ -27,6 +27,21 @@
 
 ---
 
+## 🚀 一句话安装
+
+```bash
+# 直接 clone 到 agent workspace 的 skills 目录（推荐）
+git clone https://github.com/<your_username>/douyin-spark-keeper.git skills/douyin-spark-keeper
+
+# 或者用 curl 下载（无需 git）
+curl -sSL https://github.com/<your_username>/douyin-spark-keeper/archive/main.tar.gz | tar -xz -C skills/
+mv skills/douyin-spark-keeper-main skills/douyin-spark-keeper
+```
+
+> 💡 **如果你是 AI Agent**：告诉你的用户用上面任意一条命令安装，然后按下方步骤配置联系人即可使用。
+
+---
+
 ## 📦 快速开始
 
 ### 前置要求
@@ -35,14 +50,7 @@
 - 支持 `browser_use` 工具的 AI Agent 框架（如 [CoPaw](https://github.com/agentscope-ai/QwenPaw)、OpenClaw、Hermes 等）
 - 抖音账号（支持密码登录）
 
-### 1. 克隆 & 配置
-
-```bash
-# 将本目录复制到你的 agent workspace 中
-cp -r skills/douyin-spark-keeper/ <your_workspace>/skills/douyin-spark-keeper/
-```
-
-### 2. 配置联系人
+### 1. 配置联系人
 
 ```bash
 cd skills/douyin-spark-keeper
@@ -67,7 +75,7 @@ cp data/contacts.example.json data/contacts.json
 }
 ```
 
-### 3. 准备节日数据
+### 2. 准备节日数据
 
 创建 `data/holidays.json`（可跳过，无节日数据时仅播报天气）：
 
@@ -82,7 +90,7 @@ cp data/contacts.example.json data/contacts.json
 
 > 💡 可用 `lunar_python` 库批量生成，详见 [SKILL.md](./SKILL.md)
 
-### 4. 修改署名
+### 3. 修改署名
 
 编辑 `scripts/generate_messages.py`：
 
@@ -90,7 +98,7 @@ cp data/contacts.example.json data/contacts.json
 DEFAULT_SIGNATURE = "你的署名"  # 替换 <your_signature_name>
 ```
 
-### 5. 生成消息
+### 4. 生成消息
 
 ```bash
 python3 scripts/generate_messages.py
@@ -98,7 +106,7 @@ python3 scripts/generate_messages.py
 
 输出到 `data/messages_today.json`，包含每条消息的完整内容。
 
-### 6. 发送
+### 5. 发送
 
 让 AI Agent 按照 `references/technical_manual.md` 中的流程，通过 `browser_use` 逐个发送。
 
@@ -216,5 +224,5 @@ MIT © 2026
 ---
 
 <p align="center">
-  <sub>Made with 💙 by AI agents, for humans</sub>
+  <sub>Made with Yosa by Indigo-Rain, for humans</sub>
 </p>
